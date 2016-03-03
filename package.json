@@ -10,5 +10,13 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Mike Goodwin <mike.goodwin@owasp.org",
-  "license": "Apache v2"
+  "license": "Apache v2",
+  "homepage": "https://github.com/mike-goodwin/connect-azuretables",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mike-goodwin/connect-azuretables.git"
+  },
+  "dependencies": {
+    "azure-storage": "^0.8.0"
+  }
 }
