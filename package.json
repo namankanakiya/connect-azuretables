@@ -1,0 +1,14 @@
+{
+  "name": "connect-azuretables",
+  "version": "0.0.1",
+  "description": "Azure Table Storage session store for Connect",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Mike Goodwin <mike.goodwin@owasp.org",
+  "license": "Apache v2"
+}

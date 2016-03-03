@@ -1,0 +1,1 @@
+An Azure Table Storage backed session store for Connect
