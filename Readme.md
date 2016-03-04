@@ -16,24 +16,37 @@ Usage
 
 Not is any NPM repo (yet) so you'll need to download it from here. Sorry.
 
-  var express = require('express');
-  var session = require('express-session');
-  var AzureTablesStore = require('connect-azuretables')(session);
-  var app = express();
-  app.use(session({ store: new AzureTablesStore(), secret: "keyboard cat"}));
+    var express = require('express');
+    var session = require('express-session');
+    var AzureTablesStore = require('connect-azuretables')(session);
+    var app = express();
+    app.use(session({ store: new AzureTablesStore(), secret: "keyboard cat"}));
 
-The Azure storage account will be read from the environment variable. Either specify AZURE_STORAGE_CONNECTION_STRING or AZURE_STORAGE_ACCOUNT and AZURE_STORAGE_ACCESS_KEY. Alternatively you can specify them in code:
+The Azure storage account will be read from the environment variable. Either specify 
 
-  var options = {azureStorageConnectionString: "<your connection string>"};
-  app.use(session({ store: new AzureTablesStore(options), secret: "keyboard cat"}));
+    AZURE_STORAGE_CONNECTION_STRING
+    
+or both of
+
+    AZURE_STORAGE_ACCOUNT
+    AZURE_STORAGE_ACCESS_KEY
+    
+Alternatively you can specify them in code as options:
+
+    var options = {azureStorageConnectionString: "<your connection string>"};
+    app.use(session({ store: new AzureTablesStore(options), secret: "keyboard cat"}));
  
 or
 
-  var options = {storageAccount: "<account name>", accessKey: "<key>"};
-  app.use(session({ store: new AzureTablesStore(options), secret: "keyboard cat"}));
+    var options = {storageAccount: "<account name>", accessKey: "<key>"};
+    app.use(session({ store: new AzureTablesStore(options), secret: "keyboard cat"}));
   
-By default the session data will be stored in a table called ConnectAzureTablesSessions. This can be overridden using 
+By default the session data will be stored in a table called
 
-  var options = {table: "customtablename"}
+    ConnectAzureTablesSessions
+    
+This can be overridden using 
+
+    var options = {table: "customtablename"}
   
 Whether you use the default or specify your own name, the table will be created if it doesn't already exist.
