@@ -22,7 +22,7 @@ Not is any NPM repo (yet) so you'll need to download it from here. Sorry.
     var app = express();
     app.use(session({ store: new AzureTablesStore(), secret: "keyboard cat"}));
 
-The Azure storage account will be read from the environment variable. Either specify 
+By default, the Azure storage account will be read from environment variables. Either specify 
 
     AZURE_STORAGE_CONNECTION_STRING
     
