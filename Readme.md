@@ -1,7 +1,7 @@
 Connect-AzureTables
 ===================
 
-An Azure Table Storage backed session store implementation for [express-session](https://github.com/expressjs/session#session-store-implementation), heavily based on [connect-redis]()https://www.npmjs.com/package/connect-redis.
+An Azure Table Storage backed session store implementation for [express-session](https://github.com/expressjs/session#session-store-implementation), heavily based on [connect-redis]()https://www.npmjs.com/package/connect-redis).
 
 *Health Warning:* This is work in progress - it is not finished and has had literally no testing!
 
