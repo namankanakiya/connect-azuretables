@@ -31,12 +31,7 @@ or both of
     AZURE_STORAGE_ACCOUNT
     AZURE_STORAGE_ACCESS_KEY
     
-Alternatively you can specify them in code as options:
-
-    var options = {azureStorageConnectionString: "<your connection string>"};
-    app.use(session({ store: new AzureTablesStore(options), secret: "keyboard cat"}));
- 
-or
+Alternatively you can specify th account/key code as options:
 
     var options = {storageAccount: "<account name>", accessKey: "<key>"};
     app.use(session({ store: new AzureTablesStore(options), secret: "keyboard cat"}));

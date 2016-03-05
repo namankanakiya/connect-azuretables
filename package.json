@@ -7,7 +7,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node ./node_modules/istanbul/lib/cli.js cover -x spec/*.js  spec/jasmine-runner.js"
   },
   "author": "Mike Goodwin <mike.goodwin@owasp.org",
   "license": "Apache v2",
@@ -18,5 +18,12 @@
   },
   "dependencies": {
     "azure-storage": "^0.8.0"
+  },
+  "devDependencies": {
+    "express-session": "^1.13.0",
+    "istanbul": "^0.4.2",
+    "jasmine": "^2.4.1",
+    "jasmine-spec-reporter": "^2.4.0",
+    "mockery": "^1.4.0"
   }
 }
