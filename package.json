@@ -7,6 +7,7 @@
     "test": "test"
   },
   "scripts": {
+    "pretest": "node ./node_modules/jshint/bin/jshint lib index.js",
     "test": "node ./node_modules/istanbul/lib/cli.js cover -x spec/*.js  spec/jasmine-runner.js"
   },
   "author": "Mike Goodwin <mike.goodwin@owasp.org",
@@ -24,6 +25,7 @@
     "istanbul": "^0.4.2",
     "jasmine": "^2.4.1",
     "jasmine-spec-reporter": "^2.4.0",
+    "jshint": "^2.9.1",
     "mockery": "^1.4.0"
   }
 }
