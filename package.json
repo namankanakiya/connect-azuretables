@@ -12,7 +12,7 @@
     "codecov": "cat './coverage/lcov.info' | codecov"
   },
   "author": "Mike Goodwin <mike.goodwin@owasp.org",
-  "license": "Apache v2",
+  "license": "Apache-2.0",
   "homepage": "https://github.com/mike-goodwin/connect-azuretables",
   "repository": {
     "type": "git",
