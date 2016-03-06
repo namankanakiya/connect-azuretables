@@ -152,7 +152,9 @@ describe('destroy tests: ', function() {
     
     it('should destroy the specified session', function() {
         
-        mockTableService.deleteEntity = function() {};
+        mockTableService.deleteEntity = function(table, session, cb) {
+            cb(null);
+        };
         spyOn(mockTableService,'deleteEntity').and.callThrough();
         azureTablesStore.destroy(sid);
         expect(mockTableService.deleteEntity).toHaveBeenCalled();
@@ -214,6 +216,7 @@ describe('get tests: ', function() {
     it('should get the specified session', function() {
 
         mockTableService.retrieveEntity = function() {};
+        
         spyOn(mockTableService,'retrieveEntity').and.callThrough();
         azureTablesStore.get(sid);
         expect(mockTableService.retrieveEntity).toHaveBeenCalled();
@@ -279,14 +282,17 @@ describe('set tests: ', function() {
     
     it('should set the specified session', function() {
 
-        mockTableService.insertOrReplaceEntity = function() {};
+        mockTableService.insertOrReplaceEntity = function(table, session, cb) {
+            cb();
+        };
+        
         spyOn(mockTableService,'insertOrReplaceEntity').and.callThrough();
         azureTablesStore.set(sid, session);
         expect(mockTableService.insertOrReplaceEntity).toHaveBeenCalled();
         expect(mockTableService.insertOrReplaceEntity.calls.argsFor(0)[1]).toEqual(entity);
     });
     
-    it('should get the specified session and call back', function() {
+    it('should set the specified session and call back', function() {
         
         var result = 'set result';
         
