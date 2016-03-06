@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/mike-goodwin/connect-azuretables.svg?branch=master)](https://travis-ci.org/mike-goodwin/connect-azuretables)
+
 Connect-AzureTables
 ===================
 
