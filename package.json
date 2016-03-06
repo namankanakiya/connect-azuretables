@@ -8,7 +8,8 @@
   },
   "scripts": {
     "pretest": "node ./node_modules/jshint/bin/jshint lib index.js",
-    "test": "node ./node_modules/istanbul/lib/cli.js cover -x spec/*.js  spec/jasmine-runner.js"
+    "test": "node ./node_modules/istanbul/lib/cli.js cover -x spec/*.js  spec/jasmine-runner.js",
+    "codecov": "cat './coverage/lcov.info' | codecov"
   },
   "author": "Mike Goodwin <mike.goodwin@owasp.org",
   "license": "Apache v2",
@@ -21,6 +22,7 @@
     "azure-storage": "^0.8.0"
   },
   "devDependencies": {
+    "codecov.io": "^0.1.6",
     "express-session": "^1.13.0",
     "istanbul": "^0.4.2",
     "jasmine": "^2.4.1",
