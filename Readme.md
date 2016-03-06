@@ -3,8 +3,6 @@ Connect-AzureTables
 
 An Azure Table Storage backed session store implementation for [express-session](https://github.com/expressjs/session#session-store-implementation), heavily based on [connect-redis](https://www.npmjs.com/package/connect-redis).
 
-*Health Warning:* This is work in progress - it is not finished and has had literally no testing!
-
 Why?
 ====
 
@@ -45,3 +43,12 @@ This can be overridden using
     var options = {table: "customtablename"}
   
 Whether you use the default or specify your own name, the table will be created if it doesn't already exist.
+
+Tests
+=====
+
+Test are written in Jasmine with coverage by Istanbul. The pretest script runs JSLint.
+
+    npm test
+    
+I aim to maintain test coverage at 100%, since it is only a small project ;-)
