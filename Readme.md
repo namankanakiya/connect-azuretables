@@ -14,7 +14,11 @@ Why?
 Usage
 =====
 
-Not is any NPM repo (yet) so you'll need to download it from here. Sorry.
+To install:
+
+    npm install connect-azuretables -save
+    
+To use:
 
     var express = require('express');
     var session = require('express-session');
