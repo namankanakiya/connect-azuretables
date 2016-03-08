@@ -5,6 +5,7 @@ Connect-AzureTables
 
 An Azure Table Storage backed session store implementation for [express-session](https://github.com/expressjs/session#session-store-implementation), heavily based on [connect-redis](https://www.npmjs.com/package/connect-redis).
 
+
 Why?
 ====
 
@@ -13,6 +14,8 @@ Why?
 
 Usage
 =====
+
+You can look at this [example application](https://github.com/mike-goodwin/connect-azuretables-sample) to help you get started.
 
 To install:
 
