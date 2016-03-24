@@ -25,9 +25,9 @@ To use:
 
     var express = require('express');
     var session = require('express-session');
-    var AzureTablesStore = require('connect-azuretables')(session);
+    var AzureTablesStoreFactory = require('connect-azuretables')(session);
     var app = express();
-    app.use(session({ store: new AzureTablesStore(), secret: "keyboard cat"}));
+    app.use(session({ store: AzureTablesStoreFactory.create(), secret: "keyboard cat"}));
 
 By default, the Azure storage account will be read from environment variables. Either specify 
 
@@ -41,7 +41,7 @@ or both of
 Alternatively you can specify th account/key code as options:
 
     var options = {storageAccount: "<account name>", accessKey: "<key>"};
-    app.use(session({ store: new AzureTablesStore(options), secret: "keyboard cat"}));
+    app.use(session({ store: AzureTablesStoreFactory.create(), secret: "keyboard cat"}));
   
 By default the session data will be stored in a table called
 
