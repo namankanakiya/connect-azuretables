@@ -16,12 +16,20 @@ mockTableService.createTableIfNotExists = function() { };
 //entityGeneratorMock
 var mockEntGen = {};
 mockEntGen.String = function(value) { return value; }
+mockEntGen.Int64 = function(value) { return value; }
+mockEntGen.Int32 = function(value) { return value; }
+mockEntGen.DateTime = function(value) { return value; }
+mockEntGen.Boolean = function(value) { return value; }
 
 //azure-storage mock
 var mockAzureStorage = {};
 mockAzureStorage.createTableService = function() { return mockTableService; };
 mockAzureStorage.LinearRetryPolicyFilter = function() { };
 mockAzureStorage.TableUtilities = { entityGenerator: mockEntGen };
+
+//Date mock
+var mockNow = 100000;
+Date.now = function() { return mockNow; }
 
 mockery.registerMock('azure-storage', mockAzureStorage);
 
@@ -263,6 +271,8 @@ describe('set tests: ', function() {
     var sid = 'sidforsetting';
     var session = { value: 'session value' };
     var entity = { PartitionKey: sid, RowKey: sid, data: JSON.stringify(session) };
+    var setEntity = entity;
+    setEntity.lastTouched = Date.now();
     var handler = {};
     handler.callBack = function() { };
 
@@ -283,7 +293,7 @@ describe('set tests: ', function() {
         spyOn(mockTableService, 'insertOrReplaceEntity').and.callThrough();
         azureTablesStore.set(sid, session);
         expect(mockTableService.insertOrReplaceEntity).toHaveBeenCalled();
-        expect(mockTableService.insertOrReplaceEntity.calls.argsFor(0)[1]).toEqual(entity);
+        expect(mockTableService.insertOrReplaceEntity.calls.argsFor(0)[1]).toEqual(setEntity);
     });
 
     it('should set the specified session and call back', function() {
@@ -297,7 +307,7 @@ describe('set tests: ', function() {
         spyOn(mockTableService, 'insertOrReplaceEntity').and.callThrough();
         azureTablesStore.set(sid, session, handler.callBack);
         expect(mockTableService.insertOrReplaceEntity).toHaveBeenCalled();
-        expect(mockTableService.insertOrReplaceEntity.calls.argsFor(0)[1]).toEqual(entity);
+        expect(mockTableService.insertOrReplaceEntity.calls.argsFor(0)[1]).toEqual(setEntity);
         expect(handler.callBack).toHaveBeenCalled();
         expect(handler.callBack.calls.argsFor(0)).toEqual([null, result]);
 
@@ -313,6 +323,70 @@ describe('set tests: ', function() {
 
         spyOn(mockTableService, 'insertOrReplaceEntity').and.callThrough();
         azureTablesStore.set(sid, session, handler.callBack);
+        expect(mockTableService.insertOrReplaceEntity).toHaveBeenCalled();
+        expect(mockTableService.insertOrReplaceEntity.calls.argsFor(0)[1]).toEqual(setEntity);
+        expect(handler.callBack).toHaveBeenCalled();
+        expect(handler.callBack.calls.argsFor(0)).toEqual([error]);
+
+    });
+});
+
+describe('touch tests: ', function() {
+
+    var azureTablesStore;
+    var sid = 'sidforTouching';
+    var session = { value: 'session value' };
+    var entity = { PartitionKey: sid, RowKey: sid, data: JSON.stringify(session), lastTouched: Date.now() };
+    var handler = {};
+    handler.callBack = function() { };
+
+    beforeEach(function() {
+
+        var options = { storageAccount: 'account', accessKey: 'key', table: 'table' };
+        azureTablesStore = AzureTablesStoreFactory.create(options);
+        spyOn(handler, 'callBack');
+
+    });
+
+    it('should touch the specified session', function() {
+
+        mockTableService.insertOrReplaceEntity = function(table, session, cb) {
+            cb();
+        };
+
+        spyOn(mockTableService, 'insertOrReplaceEntity').and.callThrough();
+        azureTablesStore.touch(sid, session);
+        expect(mockTableService.insertOrReplaceEntity).toHaveBeenCalled();
+        expect(mockTableService.insertOrReplaceEntity.calls.argsFor(0)[1]).toEqual(entity);
+    });
+
+    it('should touch the specified session and call back', function() {
+
+        var result = 'set result';
+
+        mockTableService.insertOrReplaceEntity = function(table, session, cb) {
+            cb(null, result);
+        };
+
+        spyOn(mockTableService, 'insertOrReplaceEntity').and.callThrough();
+        azureTablesStore.touch(sid, session, handler.callBack);
+        expect(mockTableService.insertOrReplaceEntity).toHaveBeenCalled();
+        expect(mockTableService.insertOrReplaceEntity.calls.argsFor(0)[1]).toEqual(entity);
+        expect(handler.callBack).toHaveBeenCalled();
+        expect(handler.callBack.calls.argsFor(0)).toEqual([null, result]);
+
+    });
+
+    it('should error when touching the session', function() {
+
+        var error = 'touch error';
+
+        mockTableService.insertOrReplaceEntity = function(table, session, cb) {
+            cb(error);
+        };
+
+        spyOn(mockTableService, 'insertOrReplaceEntity').and.callThrough();
+        azureTablesStore.touch(sid, session, handler.callBack);
         expect(mockTableService.insertOrReplaceEntity).toHaveBeenCalled();
         expect(mockTableService.insertOrReplaceEntity.calls.argsFor(0)[1]).toEqual(entity);
         expect(handler.callBack).toHaveBeenCalled();
@@ -421,6 +495,8 @@ describe('logging tests', function() {
         var sid = 'sidforsetting';
         var session = { value: 'session value' };
         var entity = { PartitionKey: sid, RowKey: sid, data: JSON.stringify(session) };
+        var setEntity = entity;
+        setEntity.lastTouched = Date.now();
         var handler = {};
         handler.callBack = function() { };
 
@@ -441,8 +517,40 @@ describe('logging tests', function() {
             spyOn(mockTableService, 'insertOrReplaceEntity').and.callThrough();
             azureTablesStore.set(sid, session);
             expect(mockTableService.insertOrReplaceEntity).toHaveBeenCalled();
-            expect(mockTableService.insertOrReplaceEntity.calls.argsFor(0)[1]).toEqual(entity);
+            expect(mockTableService.insertOrReplaceEntity.calls.argsFor(0)[1]).toEqual(setEntity);
             expect(logger.logFn.calls.argsFor(1)[0].indexOf('SET') >= 0).toBe(true);
+            expect(logger.logFn.calls.argsFor(1)[0].indexOf(sid) >= 0).toBe(true);
+        });
+    });
+    
+    describe('touch tests: ', function() {
+
+        var azureTablesStore;
+        var sid = 'sidforTouching';
+        var session = { value: 'session value' };
+        var entity = { PartitionKey: sid, RowKey: sid, data: JSON.stringify(session), lastTouched: Date.now() };
+        var handler = {};
+        handler.callBack = function() { };
+
+        beforeEach(function() {
+
+            var options = { storageAccount: 'account', accessKey: 'key', table: 'table', logger: logger.logFn   };
+            azureTablesStore = AzureTablesStoreFactory.create(options);
+            spyOn(handler, 'callBack');
+
+        });
+
+        it('should log touching the session', function() {
+
+            mockTableService.insertOrReplaceEntity = function(table, session, cb) {
+                cb();
+            };
+
+            spyOn(mockTableService, 'insertOrReplaceEntity').and.callThrough();
+            azureTablesStore.touch(sid, session);
+            expect(mockTableService.insertOrReplaceEntity).toHaveBeenCalled();
+            expect(mockTableService.insertOrReplaceEntity.calls.argsFor(0)[1]).toEqual(entity);
+            expect(logger.logFn.calls.argsFor(1)[0].indexOf('TOUCH') >= 0).toBe(true);
             expect(logger.logFn.calls.argsFor(1)[0].indexOf(sid) >= 0).toBe(true);
         });
     });
