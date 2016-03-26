@@ -38,10 +38,10 @@ or both of
     AZURE_STORAGE_ACCOUNT
     AZURE_STORAGE_ACCESS_KEY
     
-Alternatively you can specify th account/key code as options:
+Alternatively you can specify the account/key code as options:
 
     var options = {storageAccount: "<account name>", accessKey: "<key>"};
-    app.use(session({ store: AzureTablesStoreFactory.create(), secret: "keyboard cat"}));
+    app.use(session({store: AzureTablesStoreFactory.create(), secret: "keyboard cat"}));
   
 By default the session data will be stored in a table called
 
@@ -52,6 +52,14 @@ This can be overridden using
     var options = {table: "customtablename"}
   
 Whether you use the default or specify your own name, the table will be created if it doesn't already exist.
+
+The package will log calls to it's core functions if you pass in a logging function in the options. For example:
+
+    var options = {logger: console.log};
+    
+This is will log the main operations on sessions - set, get, destroy (typically this would be level INFO or below). The log 
+message will contain the session ID, so if this is sensitive for some reason, do not supply a logger. 
+It *never* logs the content of the session. Errors (like incorrect storage credentials or something) are thrown and not logged.
 
 Tests
 =====
