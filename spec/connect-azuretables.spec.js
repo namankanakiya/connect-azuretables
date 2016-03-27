@@ -2,9 +2,6 @@
 
 var mockery = require('mockery');
 var moduleUnderTest = '../lib/connect-azuretables';
-mockery.registerAllowable(moduleUnderTest);
-mockery.registerAllowable('util');
-mockery.registerAllowable('express-session');
 var session = require('express-session');
 
 //azure-storage mock
@@ -26,18 +23,22 @@ var mockAzureStorage = {};
 mockAzureStorage.createTableService = function() { return mockTableService; };
 mockAzureStorage.LinearRetryPolicyFilter = function() { };
 mockAzureStorage.TableUtilities = { entityGenerator: mockEntGen };
+mockery.registerMock('azure-storage', mockAzureStorage);
 
 //Date mock
 var mockNow = 100000;
 Date.now = function() { return mockNow; }
 
-mockery.registerMock('azure-storage', mockAzureStorage);
-
 var AzureTablesStoreFactory;
 
 beforeEach(function() {
 
-    mockery.enable({ useCleanCache: true });
+    mockery.enable({
+        useCleanCache: true,
+        warnOnUnregistered: false,
+        warnOnReplace: false
+    });
+
     AzureTablesStoreFactory = require(moduleUnderTest)(session);
 
 });
@@ -135,6 +136,51 @@ describe('initialisation tests: ', function() {
 
     });
 
+    it('should not clean up sessions', function() {
+
+        var options = { storageAccount: 'account', accessKey: 'key'};
+        jasmine.clock().install()
+        var store = AzureTablesStoreFactory.create(options);
+        spyOn(store, 'cleanUp');
+        jasmine.clock().tick(21000);
+        expect(store.cleanUp).not.toHaveBeenCalled();
+        jasmine.clock().uninstall();
+    });
+
+    it('should clean up sessions (default cron)', function() {
+
+        var options = { 
+            storageAccount: 'account', 
+            accessKey: 'key', 
+            sessionTimeOut: 30
+        };
+
+        jasmine.clock().install()
+        var store = AzureTablesStoreFactory.create(options);
+        spyOn(store, 'cleanUp').and.callThrough();
+        expect(store.cleanUp).not.toHaveBeenCalled();
+        jasmine.clock().tick(61000);
+        expect(store.cleanUp).toHaveBeenCalled();
+        jasmine.clock().uninstall();
+    });
+    
+    it('should clean up sessions (cron override)', function() {
+
+        var options = { 
+            storageAccount: 'account', 
+            accessKey: 'key', 
+            sessionTimeOut: 30,
+            overrideCron: '*/12 * * * * *'
+        };
+
+        jasmine.clock().install()
+        var store = AzureTablesStoreFactory.create(options);
+        spyOn(store, 'cleanUp').and.callThrough();
+        expect(store.cleanUp).not.toHaveBeenCalled();
+        jasmine.clock().tick(13000);
+        expect(store.cleanUp).toHaveBeenCalled();
+        jasmine.clock().uninstall();
+    });
 });
 
 describe('destroy tests: ', function() {
@@ -150,7 +196,7 @@ describe('destroy tests: ', function() {
         azureTablesStore = AzureTablesStoreFactory.create(options);
         spyOn(handler, 'callBack');
 
-    });
+   });
 
     it('should destroy the specified session', function() {
 
@@ -396,20 +442,20 @@ describe('touch tests: ', function() {
 });
 
 describe('logging tests', function() {
-    
+
     var logger = {};
-    logger.logFn = function() {};
-    
+    logger.logFn = function() { };
+
     beforeEach(function() {
-        
+
         spyOn(logger, 'logFn');
-        
+
     });
 
     describe('initialisation tests: ', function() {
 
         it('should create the default table', function() {
-            
+
             var options = { storageAccount: 'account', accessKey: 'key', logger: logger.logFn };
             spyOn(mockTableService, 'createTableIfNotExists').and.callThrough();
             AzureTablesStoreFactory.create(options);
@@ -469,7 +515,7 @@ describe('logging tests', function() {
 
         beforeEach(function() {
 
-            var options = { storageAccount: 'account', accessKey: 'key', table: 'table', logger: logger.logFn  };
+            var options = { storageAccount: 'account', accessKey: 'key', table: 'table', logger: logger.logFn };
             azureTablesStore = AzureTablesStoreFactory.create(options);
             spyOn(handler, 'callBack');
 
@@ -502,7 +548,7 @@ describe('logging tests', function() {
 
         beforeEach(function() {
 
-            var options = { storageAccount: 'account', accessKey: 'key', table: 'table', logger: logger.logFn   };
+            var options = { storageAccount: 'account', accessKey: 'key', table: 'table', logger: logger.logFn };
             azureTablesStore = AzureTablesStoreFactory.create(options);
             spyOn(handler, 'callBack');
 
@@ -522,7 +568,7 @@ describe('logging tests', function() {
             expect(logger.logFn.calls.argsFor(1)[0].indexOf(sid) >= 0).toBe(true);
         });
     });
-    
+
     describe('touch tests: ', function() {
 
         var azureTablesStore;
@@ -534,7 +580,7 @@ describe('logging tests', function() {
 
         beforeEach(function() {
 
-            var options = { storageAccount: 'account', accessKey: 'key', table: 'table', logger: logger.logFn   };
+            var options = { storageAccount: 'account', accessKey: 'key', table: 'table', logger: logger.logFn };
             azureTablesStore = AzureTablesStoreFactory.create(options);
             spyOn(handler, 'callBack');
 
