@@ -9,6 +9,8 @@ var mockTableService = {};
 mockTableService.createTableService = function() { };
 mockTableService.withFilter = function() { return this; };
 mockTableService.createTableIfNotExists = function() { };
+mockTableService.queryEntities = function() { };
+mockTableService.deleteEntity = function() { };
 
 //entityGeneratorMock
 var mockEntGen = {};
@@ -23,6 +25,9 @@ var mockAzureStorage = {};
 mockAzureStorage.createTableService = function() { return mockTableService; };
 mockAzureStorage.LinearRetryPolicyFilter = function() { };
 mockAzureStorage.TableUtilities = { entityGenerator: mockEntGen };
+mockAzureStorage.TableQuery = function() {
+    this.where = function() {};
+};
 mockery.registerMock('azure-storage', mockAzureStorage);
 
 //Date mock
@@ -135,52 +140,211 @@ describe('initialisation tests: ', function() {
         expect(mockTableService.createTableIfNotExists).toHaveBeenCalled();
 
     });
+    
+    describe('session clean up cron tests', function() {
+        
+        beforeEach(function() { 
+            jasmine.clock().install();
+        });
+        
+        afterEach(function() {
+            jasmine.clock().uninstall();
+        });
+        
+        it('should not clean up sessions', function() {
 
-    it('should not clean up sessions', function() {
+            var options = { storageAccount: 'account', accessKey: 'key'};
+            var store = AzureTablesStoreFactory.create(options);
+            spyOn(store, 'cleanUp');
+            jasmine.clock().tick(21000);
+            expect(store.cleanUp).not.toHaveBeenCalled();
+        });
 
-        var options = { storageAccount: 'account', accessKey: 'key'};
-        jasmine.clock().install()
-        var store = AzureTablesStoreFactory.create(options);
-        spyOn(store, 'cleanUp');
-        jasmine.clock().tick(21000);
-        expect(store.cleanUp).not.toHaveBeenCalled();
-        jasmine.clock().uninstall();
-    });
+        it('should clean up sessions (default cron)', function() {
 
-    it('should clean up sessions (default cron)', function() {
+            var options = { 
+                storageAccount: 'account', 
+                accessKey: 'key', 
+                sessionTimeOut: 30
+            };
 
-        var options = { 
-            storageAccount: 'account', 
-            accessKey: 'key', 
-            sessionTimeOut: 30
+            var store = AzureTablesStoreFactory.create(options);
+            spyOn(store, 'cleanUp').and.callThrough();
+            expect(store.cleanUp).not.toHaveBeenCalled();
+            jasmine.clock().tick(61000);
+            expect(store.cleanUp).toHaveBeenCalled();
+        });
+        
+        it('should clean up sessions (cron override)', function() {
+
+            var options = { 
+                storageAccount: 'account', 
+                accessKey: 'key', 
+                sessionTimeOut: 30,
+                overrideCron: '*/12 * * * * *'
+            };
+
+            var store = AzureTablesStoreFactory.create(options);
+            spyOn(store, 'cleanUp').and.callThrough();
+            expect(store.cleanUp).not.toHaveBeenCalled();
+            jasmine.clock().tick(13000);
+            expect(store.cleanUp).toHaveBeenCalled();
+        });
+    });    
+});
+
+describe('session clean up tests', function() {
+    
+    it('should find no sessions to delete', function() {
+        
+        var mockLogger = { log: function() {  } };
+
+        spyOn(mockLogger,'log');
+        spyOn(mockTableService, 'queryEntities').and.callFake(function(table, query, token, cb) {
+            cb(null, {entries: []});
+        });
+        
+        spyOn(mockTableService, 'deleteEntity');
+        
+        var options = {
+            storageAccount: 'account',
+            accessKey: 'key',
+            logger: mockLogger.log
         };
 
-        jasmine.clock().install()
         var store = AzureTablesStoreFactory.create(options);
-        spyOn(store, 'cleanUp').and.callThrough();
-        expect(store.cleanUp).not.toHaveBeenCalled();
-        jasmine.clock().tick(61000);
-        expect(store.cleanUp).toHaveBeenCalled();
-        jasmine.clock().uninstall();
+        store.cleanUp();
+        expect(mockTableService.queryEntities.calls.count()).toEqual(1);
+        expect(mockLogger.log.calls.count()).toEqual(2);
+        expect(mockTableService.deleteEntity).not.toHaveBeenCalled();
     });
     
-    it('should clean up sessions (cron override)', function() {
-
-        var options = { 
-            storageAccount: 'account', 
-            accessKey: 'key', 
-            sessionTimeOut: 30,
-            overrideCron: '*/12 * * * * *'
+    it('should log an error when fetching entities', function() {
+        
+        var mockLogger = { log: function() { } };
+        spyOn(mockLogger, 'log');
+        var error = 'query entities error';
+        spyOn(mockTableService, 'queryEntities').and.callFake(function(table, query, token, cb) {
+            cb(error, null);
+        });
+        
+        spyOn(mockTableService, 'deleteEntity');
+        
+        var options = {
+            storageAccount: 'account',
+            accessKey: 'key',
+            errorLogger: mockLogger.log
         };
 
-        jasmine.clock().install()
         var store = AzureTablesStoreFactory.create(options);
-        spyOn(store, 'cleanUp').and.callThrough();
-        expect(store.cleanUp).not.toHaveBeenCalled();
-        jasmine.clock().tick(13000);
-        expect(store.cleanUp).toHaveBeenCalled();
-        jasmine.clock().uninstall();
+        store.cleanUp();
+        expect(mockTableService.queryEntities.calls.count()).toEqual(1);
+        expect(mockLogger.log.calls.count()).toEqual(1);
+        expect(mockLogger.log.calls.argsFor(0)[0]).toEqual(error);
+        expect(mockTableService.deleteEntity).not.toHaveBeenCalled();
     });
+    
+    it('should log an error when deleting entries', function() {
+        
+        var mockLogger = { log: function(message) {
+            
+         } };
+        spyOn(mockLogger,'log').and.callThrough();;
+        var mockErrorLogger = { log: function(message) { } };
+        spyOn(mockErrorLogger,'log');
+        
+        var result = {entries: [{PartitionKey: 1}, {PartitionKey: 2}, {PartitionKey: 3}]};
+        spyOn(mockTableService, 'queryEntities').and.callFake(function(table, query, token, cb) {
+            cb(null, result);
+         });
+        
+        var options = {
+            storageAccount: 'account',
+            accessKey: 'key',
+            logger: mockLogger.log,
+            errorLogger: mockErrorLogger.log
+        };
+        
+        var error = 'delete error';
+        spyOn(mockTableService, 'deleteEntity').and.callFake(function(table, entry, cb) {
+            cb(error, 0);
+        });
+
+        var store = AzureTablesStoreFactory.create(options);
+        store.cleanUp();
+        expect(mockTableService.queryEntities.calls.count()).toEqual(1);
+        expect(mockLogger.log.calls.count()).toEqual(2);
+        expect(mockErrorLogger.log.calls.count()).toEqual(3);
+        expect(mockErrorLogger.log.calls.argsFor(0)).toEqual([error]);
+        expect(mockErrorLogger.log.calls.argsFor(1)).toEqual([error]);
+        expect(mockErrorLogger.log.calls.argsFor(2)).toEqual([error]);
+        expect(mockTableService.deleteEntity.calls.count()).toEqual(3);
+
+    });
+        
+    it('should fetch entities with a single query', function() {
+        
+        var mockLogger = { log: function(message) { } };
+        spyOn(mockLogger,'log');
+        
+        var result = {entries: [{PartitionKey: 1}, {PartitionKey: 2}, {PartitionKey: 3}]};
+        spyOn(mockTableService, 'queryEntities').and.callFake(function(table, query, token, cb) {
+            cb(null, result);
+         });
+        
+        var options = {
+            storageAccount: 'account',
+            accessKey: 'key',
+            logger: mockLogger.log
+        };
+        
+        spyOn(mockTableService, 'deleteEntity').and.callFake(function(table, entry, cb) {
+            cb(null, 'delete result');
+        });
+
+        var store = AzureTablesStoreFactory.create(options);
+        store.cleanUp();
+        expect(mockTableService.queryEntities.calls.count()).toEqual(1);
+        expect(mockLogger.log.calls.count()).toEqual(5);
+        expect(mockTableService.deleteEntity.calls.count()).toEqual(3);
+        
+    });
+    
+    it('should fetch entities with a two queries', function() {
+        
+        var mockLogger = { log: function() { } };
+        spyOn(mockLogger,'log');
+        
+        var result = {entries: [{PartitionKey: 1}, {PartitionKey: 2}, {PartitionKey: 3}]};
+        spyOn(mockTableService, 'queryEntities').and.callFake(function(table, query, token, cb) {
+            var resultToSend = result;
+            
+            if (!token) {
+                resultToSend.continuationToken = true;
+            } else {
+                delete resultToSend.continuationToken;
+            }
+            
+            cb(null, resultToSend)
+         });
+        
+        var options = {
+            storageAccount: 'account',
+            accessKey: 'key',
+            logger: mockLogger.log
+        };
+        
+        spyOn(mockTableService, 'deleteEntity').and.callFake(function(table, entry, cb) {
+            cb(null, 'delete result');
+        });
+
+        var store = AzureTablesStoreFactory.create(options);
+        store.cleanUp();
+        expect(mockTableService.queryEntities.calls.count()).toEqual(2);
+        expect(mockLogger.log.calls.count()).toEqual(8);
+        expect(mockTableService.deleteEntity.calls.count()).toEqual(6);
+        
+    }); 
 });
 
 describe('destroy tests: ', function() {
