@@ -213,8 +213,9 @@ describe('session clean up tests', function() {
         };
 
         var store = AzureTablesStoreFactory.create(options);
-        store.cleanUp();
+        store.cleanUp(1);
         expect(mockTableService.queryEntities.calls.count()).toEqual(1);
+        expect('a test of the clean up query construction').toBe('implemented');
         expect(mockLogger.log.calls.count()).toEqual(2);
         expect(mockTableService.deleteEntity).not.toHaveBeenCalled();
     });
@@ -240,7 +241,7 @@ describe('session clean up tests', function() {
         store.cleanUp();
         expect(mockTableService.queryEntities.calls.count()).toEqual(1);
         expect(mockLogger.log.calls.count()).toEqual(1);
-        expect(mockLogger.log.calls.argsFor(0)[0]).toEqual(error);
+        expect(mockLogger.log.calls.argsFor(0)[0].indexOf(error) >= 0).toBe(true);
         expect(mockTableService.deleteEntity).not.toHaveBeenCalled();
     });
     
@@ -275,9 +276,9 @@ describe('session clean up tests', function() {
         expect(mockTableService.queryEntities.calls.count()).toEqual(1);
         expect(mockLogger.log.calls.count()).toEqual(2);
         expect(mockErrorLogger.log.calls.count()).toEqual(3);
-        expect(mockErrorLogger.log.calls.argsFor(0)).toEqual([error]);
-        expect(mockErrorLogger.log.calls.argsFor(1)).toEqual([error]);
-        expect(mockErrorLogger.log.calls.argsFor(2)).toEqual([error]);
+        expect(mockErrorLogger.log.calls.argsFor(0)[0].indexOf(error) >= 0).toBe(true);
+        expect(mockErrorLogger.log.calls.argsFor(1)[0].indexOf(error) >= 0).toBe(true);
+        expect(mockErrorLogger.log.calls.argsFor(2)[0].indexOf(error) >= 0).toBe(true);
         expect(mockTableService.deleteEntity.calls.count()).toEqual(3);
 
     });
