@@ -30,10 +30,6 @@ mockAzureStorage.TableQuery = function() {
 };
 mockery.registerMock('azure-storage', mockAzureStorage);
 
-//Date mock
-var mockNow = 100000;
-Date.now = function() { return mockNow; }
-
 var AzureTablesStoreFactory;
 
 beforeEach(function() {
@@ -215,9 +211,14 @@ describe('session clean up tests', function() {
         var store = AzureTablesStoreFactory.create(options);
         store.cleanUp(1);
         expect(mockTableService.queryEntities.calls.count()).toEqual(1);
-        expect('a test of the clean up query construction').toBe('implemented');
         expect(mockLogger.log.calls.count()).toEqual(2);
         expect(mockTableService.deleteEntity).not.toHaveBeenCalled();
+    });
+    
+    it('should construct the correct query', function() {
+        
+        //not sure how to do this because of difficulty mocking TableQuery
+                
     });
     
     it('should log an error when fetching entities', function() {
@@ -243,6 +244,41 @@ describe('session clean up tests', function() {
         expect(mockLogger.log.calls.count()).toEqual(1);
         expect(mockLogger.log.calls.argsFor(0)[0].indexOf(error) >= 0).toBe(true);
         expect(mockTableService.deleteEntity).not.toHaveBeenCalled();
+    });
+    
+    it('should not log a 404 error when deleting entries', function() {
+        
+        var mockLogger = { log: function(message) {
+            
+         } };
+        spyOn(mockLogger,'log').and.callThrough();;
+        var mockErrorLogger = { log: function(message) { } };
+        spyOn(mockErrorLogger,'log');
+        
+        var result = {entries: [{PartitionKey: 1}, {PartitionKey: 2}, {PartitionKey: 3}]};
+        spyOn(mockTableService, 'queryEntities').and.callFake(function(table, query, token, cb) {
+            cb(null, result);
+         });
+        
+        var options = {
+            storageAccount: 'account',
+            accessKey: 'key',
+            logger: mockLogger.log,
+            errorLogger: mockErrorLogger.log
+        };
+        
+        var error = {statusCode: 404, message: 'delete error'};
+        spyOn(mockTableService, 'deleteEntity').and.callFake(function(table, entry, cb) {
+            cb(error, 0);
+        });
+
+        var store = AzureTablesStoreFactory.create(options);
+        store.cleanUp();
+        expect(mockTableService.queryEntities.calls.count()).toEqual(1);
+        expect(mockLogger.log.calls.count()).toEqual(2);
+        expect(mockErrorLogger.log).not.toHaveBeenCalled();
+        expect(mockTableService.deleteEntity.calls.count()).toEqual(3);
+
     });
     
     it('should log an error when deleting entries', function() {
