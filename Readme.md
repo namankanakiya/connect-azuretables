@@ -63,8 +63,8 @@ If you specify a session timeout in the options:
     
 The store will also start a cron job to delete expired sessions from the underlying table storage once they are older
 than the specified timeout (in minutes). This prevents the table filling up with stale sessions if users do not
-explicitly log out. The cron is done using the excellent [cron](https://www.npmjs.com/package/cron) package. The default cron pattern set to run every minute (`'59 * * * * *'`). You
-can this in the options:
+explicitly log out. The cron is done using the excellent [cron](https://www.npmjs.com/package/cron) package. The default cron pattern is set to run every minute (`'59 * * * * *'`). You
+can override this in the options:
 
     //run every 2 minutes
     var options = {sessionTimeOut: 30, overrideCron: '0 */2 * * * *'};
@@ -79,16 +79,15 @@ could be made easier by factoring the clean up into a separate package.
 Logging
 =======
 
-The package will log calls to it's core functions if you pass in a logging functions in the options. For example:
+The package will log calls to it's core functions if you pass logging functions in the options. For example:
 
     var options = {logger: console.log, errorLogger: console.log};
     
-If supplied, `logger` will used to log the main operations on sessions - set, get, destroy, touch (typically this would be level INFO or below). The log 
+If supplied, `logger` will be used to log the main operations on sessions - set, get, destroy, touch (typically this would be level INFO or below). The log 
 message will contain the session ID, so if this is sensitive for some reason, do not supply a logger. 
 It *never* logs the content of the session. 
 
-Errors in the background session clean up are logged using `errorLogger` if it is supplied. Errors (like incorrect storage credentials or something)
-are thrown and not logged.
+Errors in the background session clean up are logged using `errorLogger` if it is supplied. Errors in calls to the main operations (like incorrect storage credentials or something) are thrown and not logged.
 
 Tests
 =====
