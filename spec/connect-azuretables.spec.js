@@ -482,8 +482,6 @@ describe('set tests: ', function() {
     var sid = 'sidforsetting';
     var session = { value: 'session value' };
     var entity = { PartitionKey: sid, RowKey: sid, data: JSON.stringify(session) };
-    var setEntity = entity;
-    setEntity.lastTouched = Date.now();
     var handler = {};
     handler.callBack = function() { };
 
@@ -504,7 +502,7 @@ describe('set tests: ', function() {
         spyOn(mockTableService, 'insertOrReplaceEntity').and.callThrough();
         azureTablesStore.set(sid, session);
         expect(mockTableService.insertOrReplaceEntity).toHaveBeenCalled();
-        expect(mockTableService.insertOrReplaceEntity.calls.argsFor(0)[1]).toEqual(setEntity);
+        expect(mockTableService.insertOrReplaceEntity.calls.argsFor(0)[1]).toEqual(entity);
     });
 
     it('should set the specified session and call back', function() {
@@ -518,7 +516,7 @@ describe('set tests: ', function() {
         spyOn(mockTableService, 'insertOrReplaceEntity').and.callThrough();
         azureTablesStore.set(sid, session, handler.callBack);
         expect(mockTableService.insertOrReplaceEntity).toHaveBeenCalled();
-        expect(mockTableService.insertOrReplaceEntity.calls.argsFor(0)[1]).toEqual(setEntity);
+        expect(mockTableService.insertOrReplaceEntity.calls.argsFor(0)[1]).toEqual(entity);
         expect(handler.callBack).toHaveBeenCalled();
         expect(handler.callBack.calls.argsFor(0)).toEqual([null, result]);
 
@@ -535,7 +533,7 @@ describe('set tests: ', function() {
         spyOn(mockTableService, 'insertOrReplaceEntity').and.callThrough();
         azureTablesStore.set(sid, session, handler.callBack);
         expect(mockTableService.insertOrReplaceEntity).toHaveBeenCalled();
-        expect(mockTableService.insertOrReplaceEntity.calls.argsFor(0)[1]).toEqual(setEntity);
+        expect(mockTableService.insertOrReplaceEntity.calls.argsFor(0)[1]).toEqual(entity);
         expect(handler.callBack).toHaveBeenCalled();
         expect(handler.callBack.calls.argsFor(0)).toEqual([error]);
 
@@ -547,7 +545,7 @@ describe('touch tests: ', function() {
     var azureTablesStore;
     var sid = 'sidforTouching';
     var session = { value: 'session value' };
-    var entity = { PartitionKey: sid, RowKey: sid, data: JSON.stringify(session), lastTouched: Date.now() };
+    var entity = { PartitionKey: sid, RowKey: sid, data: JSON.stringify(session)};
     var handler = {};
     handler.callBack = function() { };
 
@@ -706,8 +704,6 @@ describe('logging tests', function() {
         var sid = 'sidforsetting';
         var session = { value: 'session value' };
         var entity = { PartitionKey: sid, RowKey: sid, data: JSON.stringify(session) };
-        var setEntity = entity;
-        setEntity.lastTouched = Date.now();
         var handler = {};
         handler.callBack = function() { };
 
@@ -728,7 +724,7 @@ describe('logging tests', function() {
             spyOn(mockTableService, 'insertOrReplaceEntity').and.callThrough();
             azureTablesStore.set(sid, session);
             expect(mockTableService.insertOrReplaceEntity).toHaveBeenCalled();
-            expect(mockTableService.insertOrReplaceEntity.calls.argsFor(0)[1]).toEqual(setEntity);
+            expect(mockTableService.insertOrReplaceEntity.calls.argsFor(0)[1]).toEqual(entity);
             expect(logger.logFn.calls.argsFor(1)[0].indexOf('SET') >= 0).toBe(true);
             expect(logger.logFn.calls.argsFor(1)[0].indexOf(sid) >= 0).toBe(true);
         });
@@ -739,7 +735,7 @@ describe('logging tests', function() {
         var azureTablesStore;
         var sid = 'sidforTouching';
         var session = { value: 'session value' };
-        var entity = { PartitionKey: sid, RowKey: sid, data: JSON.stringify(session), lastTouched: Date.now() };
+        var entity = { PartitionKey: sid, RowKey: sid, data: JSON.stringify(session)};
         var handler = {};
         handler.callBack = function() { };
 
