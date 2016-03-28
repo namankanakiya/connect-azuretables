@@ -19,7 +19,7 @@ You can look at this [example application](https://github.com/mike-goodwin/conne
 
 To install:
 
-    npm install connect-azuretables -save
+    npm install connect-azuretables --save
     
 To use:
 
@@ -27,7 +27,7 @@ To use:
     var session = require('express-session');
     var AzureTablesStoreFactory = require('connect-azuretables')(session);
     var app = express();
-    app.use(session({ store: AzureTablesStoreFactory.create(), secret: "keyboard cat"}));
+    app.use(session({ store: AzureTablesStoreFactory.create(), secret: 'keyboard cat'}));
 
 By default, the Azure storage account will be read from environment variables. Either specify 
 
@@ -40,8 +40,8 @@ or both of
     
 Alternatively you can specify the account/key code as options:
 
-    var options = {storageAccount: "<account name>", accessKey: "<key>"};
-    app.use(session({store: AzureTablesStoreFactory.create(), secret: "keyboard cat"}));
+    var options = {storageAccount: '<account name>', accessKey: '<key>'};
+    app.use(session({store: AzureTablesStoreFactory.create(), secret: 'keyboard cat'}));
   
 By default the session data will be stored in a table called
 
@@ -49,17 +49,46 @@ By default the session data will be stored in a table called
     
 This can be overridden using 
 
-    var options = {table: "customtablename"}
+    var options = {table: 'customtablename'};
   
 Whether you use the default or specify your own name, the table will be created if it doesn't already exist.
 
-The package will log calls to it's core functions if you pass in a logging function in the options. For example:
+Expired session clean-up
+========================
 
-    var options = {logger: console.log};
+If you specify a session timeout in the options:
+
+    //set a timeout of 30 minutes
+    var options = {sessionTimeOut: 30};
     
-This is will log the main operations on sessions - set, get, destroy (typically this would be level INFO or below). The log 
+The store will also start a cron job to delete expired sessions from the underlying table storage once they are older
+than the specified timeout (in minutes). This prevents the table filling up with stale sessions if users do not
+explicitly log out. The cron is done using the excellent [cron](https://www.npmjs.com/package/cron) package. The default cron pattern set to run every minute (`'59 * * * * *'`). You
+can this in the options:
+
+    //run every 2 minutes
+    var options = {sessionTimeOut: 30, overrideCron: '0 */2 * * * *'};
+    
+**Note:** There is no concurrency logic to prevent multiple servers trying to clean up the same session in a 
+multi-server deployment. To help prevent polluting logs unnecessarily, HTTP 404 errors on deletion are not logged, but still,
+this is not ideal. If this is a problem in your application, you could suppress the clean up on your web servers
+(just omit the `sessionTimeOut` on the options) and run the clean up code as a separate background job. In the future, this
+could be made easier by factoring the clean up into a separate package.
+[Raise an issue on Github](https://github.com/mike-goodwin/connect-azuretables/issues) if this would help you.
+
+Logging
+=======
+
+The package will log calls to it's core functions if you pass in a logging functions in the options. For example:
+
+    var options = {logger: console.log, errorLogger: console.log};
+    
+If supplied, `logger` will used to log the main operations on sessions - set, get, destroy, touch (typically this would be level INFO or below). The log 
 message will contain the session ID, so if this is sensitive for some reason, do not supply a logger. 
-It *never* logs the content of the session. Errors (like incorrect storage credentials or something) are thrown and not logged.
+It *never* logs the content of the session. 
+
+Errors in the background session clean up are logged using `errorLogger` if it is supplied. Errors (like incorrect storage credentials or something)
+are thrown and not logged.
 
 Tests
 =====
