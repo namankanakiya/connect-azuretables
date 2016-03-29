@@ -148,11 +148,11 @@ describe('initialisation tests: ', function() {
         });
         
         it('should not clean up sessions', function() {
-
+            
             var options = { storageAccount: 'account', accessKey: 'key'};
             var store = AzureTablesStoreFactory.create(options);
             spyOn(store, 'cleanUp');
-            jasmine.clock().tick(21000);
+            jasmine.clock().tick(61000);
             expect(store.cleanUp).not.toHaveBeenCalled();
         });
 
@@ -186,6 +186,29 @@ describe('initialisation tests: ', function() {
             jasmine.clock().tick(13000);
             expect(store.cleanUp).toHaveBeenCalled();
         });
+        
+        it('should clean up sessions on first set only', function() {
+
+            var options = { storageAccount: 'account', accessKey: 'key' };
+            var store = AzureTablesStoreFactory.create(options);
+            spyOn(store, 'cleanUp');
+            jasmine.clock().tick(61000);
+            expect(store.cleanUp).not.toHaveBeenCalled();
+            var sid = 'sidforsetting';
+            var session = { value: 'session value', cookie: { maxAge: 600000 } };
+            var entity = { PartitionKey: sid, RowKey: sid, data: JSON.stringify(session) };
+            
+            mockTableService.insertOrReplaceEntity = function(table, session, cb) {
+                cb();
+            };
+
+            spyOn(mockTableService, 'insertOrReplaceEntity').and.callThrough();
+            store.set(sid, session);
+            jasmine.clock().tick(61000);
+            expect(store.cleanUp).toHaveBeenCalled();
+            store.set(sid, session);
+            expect(store.cleanUp.calls.count()).toEqual(1);
+        });
     });    
 });
 
@@ -209,7 +232,7 @@ describe('session clean up tests', function() {
         };
 
         var store = AzureTablesStoreFactory.create(options);
-        store.cleanUp(1);
+        store.cleanUp();
         expect(mockTableService.queryEntities.calls.count()).toEqual(1);
         expect(mockLogger.log.calls.count()).toEqual(2);
         expect(mockTableService.deleteEntity).not.toHaveBeenCalled();
