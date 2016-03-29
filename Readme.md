@@ -69,6 +69,12 @@ can override this in the options:
     //run every 2 minutes
     var options = {sessionTimeOut: 30, overrideCron: '0 */2 * * * *'};
     
+Touching the session (e.g. if the user makes a request to you application) will reset the timeout period for that
+session. This makes browser session cookies (i.e. `cookie.maxAge = null`) behave like rolling sessions.
+
+You can also achieve the same effect by setting `cookie.maxAge` and `rolling: true`. If you set both `cookie.maxAge`
+*and* `sessionTimeOut` then the session expiry is based on `maxAge`. In this case `sessionTimeOut` is ignored. 
+    
 **Note:** There is no concurrency logic to prevent multiple servers trying to clean up the same session in a 
 multi-server deployment. To help prevent polluting logs unnecessarily, HTTP 404 errors on deletion are not logged, but still,
 this is not ideal. If this is a problem in your application, you could suppress the clean up on your web servers
