@@ -1,6 +1,6 @@
 {
   "name": "connect-azuretables",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "Azure Table Storage session store for express-session",
   "main": "index.js",
   "directories": {
