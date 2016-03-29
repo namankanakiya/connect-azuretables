@@ -516,7 +516,7 @@ describe('set tests: ', function() {
 
     var azureTablesStore;
     var sid = 'sidforsetting';
-    var session = { value: 'session value' };
+    var session = { value: 'session value', cookie: {} };
     var entity = { PartitionKey: sid, RowKey: sid, data: JSON.stringify(session) };
     var handler = {};
     handler.callBack = function() { };
@@ -572,15 +572,15 @@ describe('set tests: ', function() {
         expect(mockTableService.insertOrReplaceEntity.calls.argsFor(0)[1]).toEqual(entity);
         expect(handler.callBack).toHaveBeenCalled();
         expect(handler.callBack.calls.argsFor(0)).toEqual([error]);
-
+ 
     });
 });
 
-describe('touch tests: ', function() {
+describe('touch tests with no maxAge or sessionTimeout: ', function() {
 
     var azureTablesStore;
     var sid = 'sidforTouching';
-    var session = { value: 'session value' };
+    var session = { value: 'session value', cookie: {} };
     var entity = { PartitionKey: sid, RowKey: sid, data: JSON.stringify(session)};
     var handler = {};
     handler.callBack = function() { };
@@ -607,7 +607,7 @@ describe('touch tests: ', function() {
 
     it('should touch the specified session and call back', function() {
 
-        var result = 'set result';
+        var result = 'touch result';
 
         mockTableService.insertOrReplaceEntity = function(table, session, cb) {
             cb(null, result);
@@ -636,7 +636,86 @@ describe('touch tests: ', function() {
         expect(mockTableService.insertOrReplaceEntity.calls.argsFor(0)[1]).toEqual(entity);
         expect(handler.callBack).toHaveBeenCalled();
         expect(handler.callBack.calls.argsFor(0)).toEqual([error]);
+    });
+});
 
+describe('touch tests with sessionTimeout or maxAge: ', function() {
+
+    var azureTablesStore;
+    var sid = 'sidforTouching';
+    var handler = {};
+    handler.callBack = function() { };
+
+    it('should set the session expiry from the session timeout', function() {
+
+        var session = { value: 'session value', cookie: {} };
+        var entity = { PartitionKey: sid, RowKey: sid, data: JSON.stringify(session)};
+        var options = { storageAccount: 'account', accessKey: 'key', table: 'table', sessionTimeOut: 1 };
+        azureTablesStore = AzureTablesStoreFactory.create(options);
+        spyOn(handler, 'callBack');
+
+        mockTableService.insertOrReplaceEntity = function(table, session, cb) {
+            cb();
+        };
+
+        spyOn(mockTableService, 'insertOrReplaceEntity').and.callThrough();
+        var baseTime = new Date(1000);
+        jasmine.clock().install();
+        jasmine.clock().mockDate(baseTime);
+        var touchedEntity = entity;
+        touchedEntity.expiryDate = new Date(60000 + 1000);
+        azureTablesStore.touch(sid, session);
+        jasmine.clock().uninstall();
+        expect(mockTableService.insertOrReplaceEntity).toHaveBeenCalled();
+        expect(mockTableService.insertOrReplaceEntity.calls.argsFor(0)[1]).toEqual(touchedEntity);
+    });
+    
+    it('should set the session expiry from maxAge', function() {
+
+        var session = { value: 'session value', cookie: {originalMaxAge: 60000} };
+        var entity = { PartitionKey: sid, RowKey: sid, data: JSON.stringify(session)};
+        var options = { storageAccount: 'account', accessKey: 'key', table: 'table'};
+        azureTablesStore = AzureTablesStoreFactory.create(options);
+        spyOn(handler, 'callBack');
+
+        mockTableService.insertOrReplaceEntity = function(table, session, cb) {
+            cb();
+        };
+
+        spyOn(mockTableService, 'insertOrReplaceEntity').and.callThrough();
+        var baseTime = new Date(1000);
+        jasmine.clock().install();
+        jasmine.clock().mockDate(baseTime);
+        var touchedEntity = entity;
+        touchedEntity.expiryDate = new Date(60000 + 1000);
+        azureTablesStore.touch(sid, session);
+        jasmine.clock().uninstall();
+        expect(mockTableService.insertOrReplaceEntity).toHaveBeenCalled();
+        expect(mockTableService.insertOrReplaceEntity.calls.argsFor(0)[1]).toEqual(touchedEntity);
+    });
+
+    it('should set the session expiry from maxAge and ignore session timeout', function() {
+
+        var session = { value: 'session value', cookie: {originalMaxAge: 60000} };
+        var entity = { PartitionKey: sid, RowKey: sid, data: JSON.stringify(session)};
+        var options = { storageAccount: 'account', accessKey: 'key', table: 'table', sessionTimeOut: 2};
+        azureTablesStore = AzureTablesStoreFactory.create(options);
+        spyOn(handler, 'callBack');
+
+        mockTableService.insertOrReplaceEntity = function(table, session, cb) {
+            cb();
+        };
+
+        spyOn(mockTableService, 'insertOrReplaceEntity').and.callThrough();
+        var baseTime = new Date(1000);
+        jasmine.clock().install();
+        jasmine.clock().mockDate(baseTime);
+        var touchedEntity = entity;
+        touchedEntity.expiryDate = new Date(60000 + 1000);
+        azureTablesStore.touch(sid, session);
+        jasmine.clock().uninstall();
+        expect(mockTableService.insertOrReplaceEntity).toHaveBeenCalled();
+        expect(mockTableService.insertOrReplaceEntity.calls.argsFor(0)[1]).toEqual(touchedEntity);
     });
 });
 
@@ -738,7 +817,7 @@ describe('logging tests', function() {
 
         var azureTablesStore;
         var sid = 'sidforsetting';
-        var session = { value: 'session value' };
+        var session = { value: 'session value', cookie: {} };
         var entity = { PartitionKey: sid, RowKey: sid, data: JSON.stringify(session) };
         var handler = {};
         handler.callBack = function() { };
@@ -770,7 +849,7 @@ describe('logging tests', function() {
 
         var azureTablesStore;
         var sid = 'sidforTouching';
-        var session = { value: 'session value' };
+        var session = { value: 'session value', cookie: {} };
         var entity = { PartitionKey: sid, RowKey: sid, data: JSON.stringify(session)};
         var handler = {};
         handler.callBack = function() { };
