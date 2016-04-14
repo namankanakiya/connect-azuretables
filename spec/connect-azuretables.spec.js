@@ -372,6 +372,34 @@ describe('session clean up tests', function() {
         
     });
     
+    it('should fetch entities with a single query', function() {
+        
+        var mockLogger = { log: function(message) { } };
+        spyOn(mockLogger,'log');
+        
+        var result = {entries: [{PartitionKey: 1}, {PartitionKey: 2}, {PartitionKey: 3}]};
+        spyOn(mockTableService, 'queryEntities').and.callFake(function(table, query, token, cb) {
+            cb(null, result);
+         });
+        
+        var options = {
+            storageAccount: 'account',
+            accessKey: 'key',
+            logger: mockLogger.log
+        };
+        
+        spyOn(mockTableService, 'deleteEntity').and.callFake(function(table, entry, cb) {
+            cb(null, 'delete result');
+        });
+
+        var store = AzureTablesStoreFactory.create(options);
+        store.cleanUp();
+        expect(mockTableService.queryEntities.calls.count()).toEqual(1);
+        expect(mockLogger.log.calls.count()).toEqual(5);
+        expect(mockTableService.deleteEntity.calls.count()).toEqual(3);
+        
+    });
+    
     it('should fetch entities with a two queries', function() {
         
         var mockLogger = { log: function() { } };
@@ -532,6 +560,20 @@ describe('get tests: ', function() {
         expect(mockTableService.retrieveEntity.calls.argsFor(0)[2]).toEqual(sid);
         expect(handler.callBack).toHaveBeenCalled();
         expect(handler.callBack.calls.argsFor(0)).toEqual([error]);
+
+    });
+    
+    it('should retry on 404 error', function() {
+
+        var error = {statusCode: 404};
+
+        mockTableService.retrieveEntity = function(table, partitionKey, rowKey, cb) {
+            cb(error);
+        };
+
+        spyOn(mockTableService, 'retrieveEntity').and.callThrough();
+        azureTablesStore.get(sid, handler.callBack);
+        expect(mockTableService.retrieveEntity.calls.count()).toEqual(2);
 
     });
 
