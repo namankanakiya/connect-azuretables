@@ -3,6 +3,7 @@
 var mockery = require('mockery');
 var moduleUnderTest = '../lib/connect-azuretables';
 var session = require('express-session');
+var sinon = require('sinon');
 
 //azure-storage mock
 var mockTableService = {};
@@ -138,13 +139,15 @@ describe('initialisation tests: ', function() {
     });
     
     describe('session clean up cron tests', function() {
+
+        var clock;
         
         beforeEach(function() { 
-            jasmine.clock().install();
+            clock = sinon.useFakeTimers();
         });
         
         afterEach(function() {
-            jasmine.clock().uninstall();
+            clock.restore(); 
         });
         
         it('should not clean up sessions', function() {
@@ -152,7 +155,7 @@ describe('initialisation tests: ', function() {
             var options = { storageAccount: 'account', accessKey: 'key'};
             var store = AzureTablesStoreFactory.create(options);
             spyOn(store, 'cleanUp');
-            jasmine.clock().tick(61000);
+            clock.tick(61000);
             expect(store.cleanUp).not.toHaveBeenCalled();
         });
 
@@ -167,7 +170,7 @@ describe('initialisation tests: ', function() {
             var store = AzureTablesStoreFactory.create(options);
             spyOn(store, 'cleanUp').and.callThrough();
             expect(store.cleanUp).not.toHaveBeenCalled();
-            jasmine.clock().tick(61000);
+            clock.tick(61000);
             expect(store.cleanUp).toHaveBeenCalled();
         });
         
@@ -183,7 +186,7 @@ describe('initialisation tests: ', function() {
             var store = AzureTablesStoreFactory.create(options);
             spyOn(store, 'cleanUp').and.callThrough();
             expect(store.cleanUp).not.toHaveBeenCalled();
-            jasmine.clock().tick(13000);
+            clock.tick(13000);
             expect(store.cleanUp).toHaveBeenCalled();
         });
         
@@ -192,7 +195,7 @@ describe('initialisation tests: ', function() {
             var options = { storageAccount: 'account', accessKey: 'key' };
             var store = AzureTablesStoreFactory.create(options);
             spyOn(store, 'cleanUp');
-            jasmine.clock().tick(61000);
+            clock.tick(61000);
             expect(store.cleanUp).not.toHaveBeenCalled();
             var sid = 'sidforsetting';
             var session = { value: 'session value', cookie: { maxAge: 600000 } };
@@ -204,12 +207,10 @@ describe('initialisation tests: ', function() {
 
             spyOn(mockTableService, 'insertOrReplaceEntity').and.callThrough();
             store.set(sid, session);
-            jasmine.clock().tick(61000);
-            //for some reason this can result in multiple calls to store.cleanUp
+            clock.tick(61000);
             expect(store.cleanUp).toHaveBeenCalled();
-            var callCount = store.cleanUp.calls.count();
             store.set(sid, session);
-            expect(store.cleanUp.calls.count()).toEqual(callCount);
+            expect(store.cleanUp.calls.count()).toEqual(1);
         });
     });    
 });

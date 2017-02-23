@@ -19,8 +19,8 @@
     "url": "git://github.com/mike-goodwin/connect-azuretables.git"
   },
   "dependencies": {
-    "azure-storage": "1.2.0",
-    "cron": "1.1.0"
+    "azure-storage": "2.0.0",
+    "cron": "1.1.1"
   },
   "devDependencies": {
     "codecov.io": "0.1.6",
@@ -29,6 +29,7 @@
     "jasmine": "2.5.3",
     "jasmine-spec-reporter": "3.2.0",
     "jshint": "2.9.4",
-    "mockery": "2.0.0"
+    "mockery": "2.0.0",
+    "sinon": "^1.17.7"
   }
 }
