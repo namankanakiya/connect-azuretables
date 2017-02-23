@@ -1,6 +1,6 @@
 {
   "name": "connect-azuretables",
-  "version": "1.0.16",
+  "version": "1.0.17",
   "description": "Azure Table Storage session store for express-session",
   "main": "index.js",
   "directories": {
@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "azure-storage": "2.0.0",
-    "cron": "1.1.1"
+    "cron": "1.2.1"
   },
   "devDependencies": {
     "codecov.io": "0.1.6",
