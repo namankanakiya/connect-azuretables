@@ -3,6 +3,7 @@
 var mockery = require('mockery');
 var moduleUnderTest = '../lib/connect-azuretables';
 var session = require('express-session');
+var sinon = require('sinon');
 
 //azure-storage mock
 var mockTableService = {};
@@ -138,13 +139,15 @@ describe('initialisation tests: ', function() {
     });
     
     describe('session clean up cron tests', function() {
+
+        var clock;
         
         beforeEach(function() { 
-            jasmine.clock().install();
+            clock = sinon.useFakeTimers();
         });
         
         afterEach(function() {
-            jasmine.clock().uninstall();
+            clock.restore(); 
         });
         
         it('should not clean up sessions', function() {
@@ -152,7 +155,7 @@ describe('initialisation tests: ', function() {
             var options = { storageAccount: 'account', accessKey: 'key'};
             var store = AzureTablesStoreFactory.create(options);
             spyOn(store, 'cleanUp');
-            jasmine.clock().tick(61000);
+            clock.tick(61000);
             expect(store.cleanUp).not.toHaveBeenCalled();
         });
 
@@ -167,7 +170,7 @@ describe('initialisation tests: ', function() {
             var store = AzureTablesStoreFactory.create(options);
             spyOn(store, 'cleanUp').and.callThrough();
             expect(store.cleanUp).not.toHaveBeenCalled();
-            jasmine.clock().tick(61000);
+            clock.tick(61000);
             expect(store.cleanUp).toHaveBeenCalled();
         });
         
@@ -183,7 +186,7 @@ describe('initialisation tests: ', function() {
             var store = AzureTablesStoreFactory.create(options);
             spyOn(store, 'cleanUp').and.callThrough();
             expect(store.cleanUp).not.toHaveBeenCalled();
-            jasmine.clock().tick(13000);
+            clock.tick(13000);
             expect(store.cleanUp).toHaveBeenCalled();
         });
         
@@ -192,7 +195,7 @@ describe('initialisation tests: ', function() {
             var options = { storageAccount: 'account', accessKey: 'key' };
             var store = AzureTablesStoreFactory.create(options);
             spyOn(store, 'cleanUp');
-            jasmine.clock().tick(61000);
+            clock.tick(61000);
             expect(store.cleanUp).not.toHaveBeenCalled();
             var sid = 'sidforsetting';
             var session = { value: 'session value', cookie: { maxAge: 600000 } };
@@ -204,12 +207,10 @@ describe('initialisation tests: ', function() {
 
             spyOn(mockTableService, 'insertOrReplaceEntity').and.callThrough();
             store.set(sid, session);
-            jasmine.clock().tick(61000);
-            //for some reason this can result in multiple calls to store.cleanUp
+            clock.tick(61000);
             expect(store.cleanUp).toHaveBeenCalled();
-            var callCount = store.cleanUp.calls.count();
             store.set(sid, session);
-            expect(store.cleanUp.calls.count()).toEqual(callCount);
+            expect(store.cleanUp.calls.count()).toEqual(1);
         });
     });    
 });
@@ -715,9 +716,10 @@ describe('touch tests with sessionTimeout or maxAge: ', function() {
 
     it('should set the session expiry from the session timeout', function() {
 
+        var timeOut = 60000 //miliseconds
         var session = { value: 'session value', cookie: {} };
         var entity = { PartitionKey: sid, RowKey: sid, data: JSON.stringify(session)};
-        var options = { storageAccount: 'account', accessKey: 'key', table: 'table', sessionTimeOut: 1 };
+        var options = { storageAccount: 'account', accessKey: 'key', table: 'table', sessionTimeOut: timeOut/60000 };
         azureTablesStore = AzureTablesStoreFactory.create(options);
         spyOn(handler, 'callBack');
 
@@ -726,20 +728,20 @@ describe('touch tests with sessionTimeout or maxAge: ', function() {
         };
 
         spyOn(mockTableService, 'insertOrReplaceEntity').and.callThrough();
-        var baseTime = new Date(1000);
-        jasmine.clock().install();
-        jasmine.clock().mockDate(baseTime);
+        var baseTime = 1000;
+        var clock = sinon.useFakeTimers(baseTime);
         var touchedEntity = entity;
-        touchedEntity.expiryDate = new Date(60000 + 1000);
+        touchedEntity.expiryDate = new Date(timeOut + baseTime);
         azureTablesStore.touch(sid, session);
-        jasmine.clock().uninstall();
+        clock.restore();
         expect(mockTableService.insertOrReplaceEntity).toHaveBeenCalled();
         expect(mockTableService.insertOrReplaceEntity.calls.argsFor(0)[1]).toEqual(touchedEntity);
     });
     
     it('should set the session expiry from maxAge', function() {
 
-        var session = { value: 'session value', cookie: {originalMaxAge: 60000} };
+        var timeOut = 30000;
+        var session = { value: 'session value', cookie: {originalMaxAge: timeOut} };
         var entity = { PartitionKey: sid, RowKey: sid, data: JSON.stringify(session)};
         var options = { storageAccount: 'account', accessKey: 'key', table: 'table'};
         azureTablesStore = AzureTablesStoreFactory.create(options);
@@ -750,13 +752,12 @@ describe('touch tests with sessionTimeout or maxAge: ', function() {
         };
 
         spyOn(mockTableService, 'insertOrReplaceEntity').and.callThrough();
-        var baseTime = new Date(1000);
-        jasmine.clock().install();
-        jasmine.clock().mockDate(baseTime);
+        var baseTime = 1000;
+        var clock = sinon.useFakeTimers(baseTime);
         var touchedEntity = entity;
-        touchedEntity.expiryDate = new Date(60000 + 1000);
+        touchedEntity.expiryDate = new Date(timeOut + baseTime);
         azureTablesStore.touch(sid, session);
-        jasmine.clock().uninstall();
+        clock.restore();
         expect(mockTableService.insertOrReplaceEntity).toHaveBeenCalled();
         expect(mockTableService.insertOrReplaceEntity.calls.argsFor(0)[1]).toEqual(touchedEntity);
     });
@@ -774,13 +775,13 @@ describe('touch tests with sessionTimeout or maxAge: ', function() {
         };
 
         spyOn(mockTableService, 'insertOrReplaceEntity').and.callThrough();
-        var baseTime = new Date(1000);
-        jasmine.clock().install();
-        jasmine.clock().mockDate(baseTime);
+        var baseTime = 1000;
+        var timeOut = 60000;
+        var clock = sinon.useFakeTimers(baseTime);
         var touchedEntity = entity;
-        touchedEntity.expiryDate = new Date(60000 + 1000);
+        touchedEntity.expiryDate = new Date(timeOut + baseTime);
         azureTablesStore.touch(sid, session);
-        jasmine.clock().uninstall();
+        clock.restore();
         expect(mockTableService.insertOrReplaceEntity).toHaveBeenCalled();
         expect(mockTableService.insertOrReplaceEntity.calls.argsFor(0)[1]).toEqual(touchedEntity);
     });
