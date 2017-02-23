@@ -716,9 +716,10 @@ describe('touch tests with sessionTimeout or maxAge: ', function() {
 
     it('should set the session expiry from the session timeout', function() {
 
+        var timeOut = 60000 //miliseconds
         var session = { value: 'session value', cookie: {} };
         var entity = { PartitionKey: sid, RowKey: sid, data: JSON.stringify(session)};
-        var options = { storageAccount: 'account', accessKey: 'key', table: 'table', sessionTimeOut: 1 };
+        var options = { storageAccount: 'account', accessKey: 'key', table: 'table', sessionTimeOut: timeOut/60000 };
         azureTablesStore = AzureTablesStoreFactory.create(options);
         spyOn(handler, 'callBack');
 
@@ -727,20 +728,20 @@ describe('touch tests with sessionTimeout or maxAge: ', function() {
         };
 
         spyOn(mockTableService, 'insertOrReplaceEntity').and.callThrough();
-        var baseTime = new Date(1000);
-        jasmine.clock().install();
-        jasmine.clock().mockDate(baseTime);
+        var baseTime = 1000;
+        var clock = sinon.useFakeTimers(baseTime);
         var touchedEntity = entity;
-        touchedEntity.expiryDate = new Date(60000 + 1000);
+        touchedEntity.expiryDate = new Date(timeOut + baseTime);
         azureTablesStore.touch(sid, session);
-        jasmine.clock().uninstall();
+        clock.restore();
         expect(mockTableService.insertOrReplaceEntity).toHaveBeenCalled();
         expect(mockTableService.insertOrReplaceEntity.calls.argsFor(0)[1]).toEqual(touchedEntity);
     });
     
     it('should set the session expiry from maxAge', function() {
 
-        var session = { value: 'session value', cookie: {originalMaxAge: 60000} };
+        var timeOut = 30000;
+        var session = { value: 'session value', cookie: {originalMaxAge: timeOut} };
         var entity = { PartitionKey: sid, RowKey: sid, data: JSON.stringify(session)};
         var options = { storageAccount: 'account', accessKey: 'key', table: 'table'};
         azureTablesStore = AzureTablesStoreFactory.create(options);
@@ -751,13 +752,12 @@ describe('touch tests with sessionTimeout or maxAge: ', function() {
         };
 
         spyOn(mockTableService, 'insertOrReplaceEntity').and.callThrough();
-        var baseTime = new Date(1000);
-        jasmine.clock().install();
-        jasmine.clock().mockDate(baseTime);
+        var baseTime = 1000;
+        var clock = sinon.useFakeTimers(baseTime);
         var touchedEntity = entity;
-        touchedEntity.expiryDate = new Date(60000 + 1000);
+        touchedEntity.expiryDate = new Date(timeOut + baseTime);
         azureTablesStore.touch(sid, session);
-        jasmine.clock().uninstall();
+        clock.restore();
         expect(mockTableService.insertOrReplaceEntity).toHaveBeenCalled();
         expect(mockTableService.insertOrReplaceEntity.calls.argsFor(0)[1]).toEqual(touchedEntity);
     });
@@ -775,13 +775,13 @@ describe('touch tests with sessionTimeout or maxAge: ', function() {
         };
 
         spyOn(mockTableService, 'insertOrReplaceEntity').and.callThrough();
-        var baseTime = new Date(1000);
-        jasmine.clock().install();
-        jasmine.clock().mockDate(baseTime);
+        var baseTime = 1000;
+        var timeOut = 60000;
+        var clock = sinon.useFakeTimers(baseTime);
         var touchedEntity = entity;
-        touchedEntity.expiryDate = new Date(60000 + 1000);
+        touchedEntity.expiryDate = new Date(timeOut + baseTime);
         azureTablesStore.touch(sid, session);
-        jasmine.clock().uninstall();
+        clock.restore();
         expect(mockTableService.insertOrReplaceEntity).toHaveBeenCalled();
         expect(mockTableService.insertOrReplaceEntity.calls.argsFor(0)[1]).toEqual(touchedEntity);
     });
