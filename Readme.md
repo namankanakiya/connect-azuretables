@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.org/mike-goodwin/connect-azuretables.svg?branch=master)](https://travis-ci.org/mike-goodwin/connect-azuretables) [![codecov.io](http://codecov.io/github/mike-goodwin/connect-azuretables/coverage.svg?branch=master)](http://codecov.io/github/mike-goodwin/connect-azuretables?branch=master) [![Code Climate](https://codeclimate.com/github/mike-goodwin/connect-azuretables/badges/gpa.svg)](https://codeclimate.com/github/mike-goodwin/connect-azuretables) [![GitHub license](https://img.shields.io/github/license/mike-goodwin/connect-azuretables.svg)](LICENSE.txt)
 [![Dependency Status](https://dependencyci.com/github/mike-goodwin/connect-azuretables/badge)](https://dependencyci.com/github/mike-goodwin/connect-azuretables)
+[![Known Vulnerabilities](https://snyk.io/test/github/mike-goodwin/connect-azuretables/badge.svg)](https://snyk.io/test/github/snyk/goof)
 
 Connect-AzureTables
 ===================
