@@ -9,8 +9,6 @@ before_script:
 script: if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then npm test ; fi
 after_success:
   - npm run codecov
-deploy:
-  provider: azure_web_apps
 
 env:
   global:
