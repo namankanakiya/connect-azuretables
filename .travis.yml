@@ -28,5 +28,5 @@ addons:
       description: "Connect sessions store based on Azure Table Storage"
     notification_email: mike.goodwin@owasp.org
     build_command_prepend: ""
-    build_command:   "--no-command --fs-capture-search src"
+    build_command:   "--no-command --fs-capture-search lib"
     branch_pattern: coverity-scan
