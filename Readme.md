@@ -1,7 +1,6 @@
-[![Build Status](https://travis-ci.org/mike-goodwin/connect-azuretables.svg?branch=master)](https://travis-ci.org/mike-goodwin/connect-azuretables) [![codecov.io](http://codecov.io/github/mike-goodwin/connect-azuretables/coverage.svg?branch=master)](http://codecov.io/github/mike-goodwin/connect-azuretables?branch=master) [![Code Climate](https://codeclimate.com/github/mike-goodwin/connect-azuretables/badges/gpa.svg)](https://codeclimate.com/github/mike-goodwin/connect-azuretables) [![GitHub license](https://img.shields.io/github/license/mike-goodwin/connect-azuretables.svg)](LICENSE.txt)
-[![Dependency Status](https://dependencyci.com/github/mike-goodwin/connect-azuretables/badge)](https://dependencyci.com/github/mike-goodwin/connect-azuretables)
-[![Known Vulnerabilities](https://snyk.io/test/github/mike-goodwin/connect-azuretables/badge.svg)](https://snyk.io/test/github/mike-goodwin/connect-azuretables)
-[![Coverity Scan Build Status](https://scan.coverity.com/projects/14308/badge.svg)](https://scan.coverity.com/projects/mike-goodwin-connect-azuretables)
+[![Build Status](https://api.travis-ci.org/namankanakiya/connect-azuretables.svg?branch=master)](https://travis-ci.org/namankanakiya/connect-azuretables) [![codecov](https://codecov.io/gh/namankanakiya/connect-azuretables/branch/master/graph/badge.svg)](https://codecov.io/gh/namankanakiya/connect-azuretables)[![Code Climate](https://api.codeclimate.com/v1/badges/7ee7083e5944a9ce1cf3/maintainability)](https://codeclimate.com/github/namankanakiya/connect-azuretables/maintainability) [![GitHub license](https://img.shields.io/badge/license-Apache--2.0-brightgreen.svg)](LICENSE.txt)
+[![Known Vulnerabilities](https://snyk.io/test/github/namankanakiya/connect-azuretables/badge.svg)](https://snyk.io/test/github/namankanakiya/connect-azuretables)
+[![Coverity Scan Build Status](https://scan.coverity.com/projects/17961/badge.svg)](https://scan.coverity.com/projects/namankanakiya-connect-azuretables)
 
 
 Connect-AzureTables
@@ -84,7 +83,7 @@ multi-server deployment. To help prevent polluting logs unnecessarily, HTTP 404 
 this is not ideal. If this is a problem in your application, you could suppress the clean up on your web servers
 (just omit the `sessionTimeOut` on the options) and run the clean up code as a separate background job. In the future, this
 could be made easier by factoring the clean up into a separate package.
-[Raise an issue on Github](https://github.com/mike-goodwin/connect-azuretables/issues) if this would help you.
+[Raise an issue on Github](https://github.com/namankanakiya/connect-azuretables/issues) if this would help you.
 
 Logging
 =======
