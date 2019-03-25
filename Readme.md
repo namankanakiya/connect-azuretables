@@ -21,7 +21,7 @@ You can look at this [example application](https://github.com/mike-goodwin/conne
 
 To install:
 
-    npm install connect-azuretables --save
+    npm install connect-azuretables-updated --save
     
 To use:
 
