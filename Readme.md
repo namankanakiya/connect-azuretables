@@ -1,6 +1,5 @@
 [![Build Status](https://api.travis-ci.org/namankanakiya/connect-azuretables.svg?branch=master)](https://travis-ci.org/namankanakiya/connect-azuretables) [![codecov](https://codecov.io/gh/namankanakiya/connect-azuretables/branch/master/graph/badge.svg)](https://codecov.io/gh/namankanakiya/connect-azuretables)[![Code Climate](https://api.codeclimate.com/v1/badges/7ee7083e5944a9ce1cf3/maintainability)](https://codeclimate.com/github/namankanakiya/connect-azuretables/maintainability) [![GitHub license](https://img.shields.io/badge/license-Apache--2.0-brightgreen.svg)](LICENSE.txt)
 [![Known Vulnerabilities](https://snyk.io/test/github/namankanakiya/connect-azuretables/badge.svg)](https://snyk.io/test/github/namankanakiya/connect-azuretables)
-[![Coverity Scan Build Status](https://scan.coverity.com/projects/17961/badge.svg)](https://scan.coverity.com/projects/namankanakiya-connect-azuretables)
 
 
 Connect-AzureTables

@@ -9,23 +9,3 @@ before_script:
 script: if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then npm test ; fi
 after_success:
   - npm run codecov
-  - bash <(curl -s https://codecov.io/bash)
-
-env:
-  global:
-   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
-   #   via the "travis encrypt" command using the project repo's public key
-   - secure: "UaA+v2+DNqT4Lqy3Jc9pZohH1Mbm/FPXvng+tinpTcXQg0mcCNwjwhIatG8JAxIEtkCU9aJlsCMnPb4fqTGK4mJcBJn1RCf/zrqzoGmgoVtWliIDtIO7K+/AqcjHJ55+RBm449JkSXpojeccgMMt2PfkG6Q8kL9C5U7h0MT3q0g="
-
-before_install:
-  - echo -n | openssl s_client -connect https://scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
-
-addons:
-  coverity_scan:
-    project:
-      name: "namankanakiya/connect-azuretables"
-      description: "Connect sessions store based on Azure Table Storage"
-    notification_email: naman.kanakiya@gmail.com
-    build_command_prepend: ""
-    build_command: "--no-command --fs-capture-search lib"
-    branch_pattern: coverity_scan
