@@ -9,7 +9,6 @@ before_script:
 script: if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then npm test ; fi
 after_success:
   - npm run codecov
-  - bash <(curl -s https://codecov.io/bash)
 
 env:
   global:
