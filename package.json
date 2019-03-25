@@ -1,6 +1,6 @@
 {
   "name": "connect-azuretables",
-  "version": "1.0.19",
+  "version": "1.1.0",
   "description": "Azure Table Storage session store for express-session",
   "main": "index.js",
   "directories": {
@@ -11,20 +11,21 @@
     "test": "node ./node_modules/istanbul/lib/cli.js cover -x spec/*.js  spec/jasmine-runner.js",
     "codecov": "cat './coverage/lcov.info' | codecov"
   },
-  "author": "Mike Goodwin <mike.goodwin@owasp.org> (https://github.com/mike-goodwin)",
+  "author": "Naman Kanakiya <naman.kanakiya@gmail.com> (https://github.com/namankanakiya/)",
   "contributors": [
+    "Naman Kanakiya <naman.kanakiya@gmail.com> (https://github.com/namankanakiya/)",
     "Mike Goodwin <mike.goodwin@owasp.org> (https://github.com/mike-goodwin)",
     "Masaki Muranaka <monaka@monami-ya.jp> (https://github.com/monaka)"
   ],
   "license": "Apache-2.0",
-  "homepage": "https://github.com/mike-goodwin/connect-azuretables",
+  "homepage": "https://github.com/namankanakiya/connect-azuretables",
   "repository": {
     "type": "git",
-    "url": "git://github.com/mike-goodwin/connect-azuretables.git"
+    "url": "git://github.com/namankanakiya/connect-azuretables.git"
   },
   "dependencies": {
-    "azure-storage": "2.6.0",
-    "cron": "1.3.0"
+    "azure-storage": "2.10.2",
+    "cron": "1.7.0"
   },
   "devDependencies": {
     "codecov.io": "0.1.6",
