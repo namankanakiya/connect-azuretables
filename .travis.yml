@@ -7,8 +7,6 @@ before_script:
   - "sh -e /etc/init.d/xvfb start"
   - sleep 3 # give xvfb some time to start
 script: if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then npm test ; fi
-after_success:
-  - npm run codecov
 
 env:
   global:
